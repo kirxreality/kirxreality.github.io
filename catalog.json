@@ -1,0 +1,28 @@
+{
+  "collections": [
+    {
+      "id": "activewear",
+      "name": "Activewear"
+    },
+    {
+      "id": "casual-wear",
+      "name": "Casual Wear"
+    }
+  ],
+  "products": [
+    {
+      "id": "kirxreality-simple-t",
+      "name": "kirxreality simple T",
+      "description": "A dark crewneck tee with the KIRXREALITY wordmark across the chest.",
+      "price": 19.99,
+      "image": "simple-t-1.webp",
+      "collection": "casual-wear",
+      "images": [
+        "simple-t-1.webp",
+        "simple-t-2.webp",
+        "simple-t-3.webp"
+      ]
+    }
+  ],
+  "shopUrl": "https://nausicaa-lyf.creator-spring.com/"
+}

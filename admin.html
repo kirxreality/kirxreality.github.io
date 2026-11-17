@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Studio editor · KIR x Reality</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <header><a class="wordmark" href="./">KIR<span>×</span>Reality</a><a href="./">Return to showroom ↗</a></header>
+  <main>
+    <div class="mast"><h1>Studio editor<span>.</span></h1></div>
+    <div id="status" role="status" aria-live="polite">Loading studio…</div>
+    <form id="gate" class="card narrow" hidden>
+      <h2>Enter the studio</h2><label>Studio password<input id="password" type="password" required autocomplete="current-password"></label>
+      <button>Unlock studio</button>
+    </form>
+    <form id="connection" class="card narrow" hidden>
+      <h2>Connect to GitHub</h2>
+      <p>Use a fine-grained token for <b>kirxreality/kirxreality.github.io</b> with Contents read and write access. It stays in this tab’s memory and expires here when you leave.</p>
+      <label>Repository token<input id="token" type="password" autocomplete="off" spellcheck="false" required></label>
+      <button>Open editor</button>
+    </form>
+    <section id="workspace" hidden>
+      <div class="toolbar"><p id="summary"></p><button id="publish" type="button">Publish changes</button><button class="light" id="lock" type="button">Lock</button></div>
+      <nav aria-label="Editor sections">
+        <button type="button" data-view="products" aria-pressed="true">Products</button><button type="button" data-view="collections" aria-pressed="false">Collections</button><button type="button" data-view="settings" aria-pressed="false">Settings</button>
+      </nav>
+      <section id="products" class="split">
+        <div class="card"><div class="cardhead"><h2>Products</h2><button type="button" id="newProduct" class="light">+ Add</button></div>
+          <label>Find a product<input id="search" type="search" placeholder="Search by name"></label><div id="productList" class="list"></div>
+        </div>
+        <form id="productForm" class="card">
+          <h2 id="formTitle">New product</h2>
+          <label>Product name<input id="productName" maxlength="180" required></label>
+          <div class="twocol"><label>Collection<select id="collectionSelect" required></select></label><label>Display price<input id="price" maxlength="80" placeholder="e.g. $45"></label></div>
+          <label>Description<textarea id="description" rows="5" maxlength="10000"></textarea></label>
+          <label>External checkout link (optional)<input id="checkoutUrl" type="url" placeholder="https://buy.stripe.com/…" autocomplete="off"></label>
+          <label>Product image<input id="upload" type="file" accept="image/jpeg,image/png,image/webp"></label>
+          <small>JPEG, PNG or WebP, up to 8 MB. Uploaded photos are resized for the showroom.</small>
+          <img id="preview" alt="Selected product photo" hidden>
+          <label>Or paste an image URL<input id="imageUrl" placeholder="https://…" autocomplete="off"></label>
+          <div class="actions"><button>Save product to draft</button><button type="button" class="danger" id="deleteProduct" hidden>Remove product</button></div>
+        </form>
+      </section>
+      <section id="collections" class="card narrow" hidden><h2>Collections</h2><div id="collectionList" class="list"></div>
+        <form id="addCollection"><label>New collection<input id="collectionName" required maxlength="100"></label><button>Add collection</button></form>
+      </section>
+      <form id="settings" class="card narrow" hidden><h2>Showroom settings</h2>
+        <label>Separate shop URL<input id="shopUrl" type="url" placeholder="https://…" autocomplete="off"></label>
+        <label>Change studio password<input id="newPassword" type="password" autocomplete="new-password" placeholder="Leave blank to keep current password"></label>
+        <small>The studio password is visible in the public source. GitHub controls publishing access.</small>
+        <button>Save settings to draft</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
