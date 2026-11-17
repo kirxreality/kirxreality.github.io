@@ -181,8 +181,13 @@ $("gate").onsubmit = event => {
   $("workspace").hidden = false;
   $("checkoutStore").value = catalog.orderService || "";
   const ordersLink = $("ordersLink");
-  if (catalog.orderService) { ordersLink.href = catalog.orderService+"?view=orders"; ordersLink.hidden=false; }
-  else { ordersLink.hidden=true; }
+  ordersLink.hidden = !catalog.orderService;
+  ordersLink.onclick = () => {
+    const chooser = new URL("https://accounts.google.com/AccountChooser");
+    chooser.searchParams.set("Email", "singernausicaa@gmail.com");
+    chooser.searchParams.set("continue", catalog.orderService + "?view=orders");
+    window.location.assign(chooser.href);
+  };
   $("shopUrl").value = catalog.shopUrl || "";
   $("publish").disabled = true;
   $("summary").textContent = "Published catalog loaded";
@@ -377,7 +382,9 @@ const storeInput = document.createElement("input");
 storeInput.id = "checkoutStore";
 storeInput.type = "url";
 addStudioField("shopUrl", "Pay-later order service URL", storeInput);
-const ordersLink=document.createElement("a");
+const ordersLink=document.createElement("button");
+ordersLink.type="button";
+ordersLink.title="Manage orders as singernausicaa@gmail.com";
 ordersLink.id="ordersLink";
 ordersLink.textContent="Placed orders";
 ordersLink.hidden=true;
@@ -385,3 +392,4 @@ $("workspace").querySelector("nav").append(ordersLink);
 $("variantId").closest("label").hidden=true;
 $("checkoutUrl").closest("label").hidden=true;
 start();
+
