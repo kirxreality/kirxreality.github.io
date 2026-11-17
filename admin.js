@@ -8,6 +8,7 @@ let credential = "";
 let catalog;
 let branch;
 let catalogSha;
+let initialCatalog;
 let editingId = "";
 let dirty = false;
 let formDirty = false;
@@ -162,6 +163,8 @@ async function start() {
     const response = await fetch("./catalog.json", {cache:"no-store"});
     if (!response.ok) throw Error("The showroom catalog is unavailable. Reload this page to retry.");
     const published = validateCatalog(await response.json());
+    catalog = published;
+    initialCatalog = JSON.stringify(published);
     password = published.studioPassword ?? defaultPassword;
     $("gate").hidden = false;
     status("Unlock the editor to manage the showroom.");
@@ -173,9 +176,12 @@ $("gate").onsubmit = event => {
   $("password").value = "";
   if (entered !== password) return status("That studio password doesn’t match.", true);
   $("gate").hidden = true;
-  $("connection").hidden = false;
-  $("token").focus();
-  status("Studio unlocked.");
+  $("workspace").hidden = false;
+  $("shopUrl").value = catalog.shopUrl || "";
+  $("publish").disabled = true;
+  $("summary").textContent = "Published catalog loaded";
+  renderProducts(); renderCollections(); renderProduct(); section("products");
+  status("Ready to edit.");
 };
 $("connection").onsubmit = async event => {
   event.preventDefault();
@@ -188,16 +194,11 @@ $("connection").onsubmit = async event => {
     branch = (await github("")).default_branch;
     const file = await github("/contents/catalog.json?ref=" + encodeURIComponent(branch));
     const bytes = Uint8Array.from(atob(file.content), c => c.charCodeAt(0));
-    catalog = validateCatalog(JSON.parse(new TextDecoder().decode(bytes)));
+    const latest = validateCatalog(JSON.parse(new TextDecoder().decode(bytes)));
+    if (JSON.stringify(latest) !== initialCatalog) throw Error("The live catalog has changed. Your draft is still open. Copy your edits before reloading.");
     catalogSha = file.sha;
-    if ((catalog.studioPassword ?? defaultPassword) !== password) throw Error("The studio password has just changed. Reload the showroom after GitHub Pages finishes publishing.");
     $("connection").hidden = true;
-    $("workspace").hidden = false;
-    $("shopUrl").value = catalog.shopUrl || "";
-    $("publish").disabled = true;
-    $("summary").textContent = "Published catalog loaded";
-    renderProducts(); renderCollections(); renderProduct(); section("products");
-    status("Ready to edit.");
+    await $("publish").onclick();
   } catch (error) { credential = ""; problem(error); }
   finally { submit.disabled = false; }
 };
@@ -312,6 +313,11 @@ async function publish() {
 $("publish").onclick = async () => {
   if (!dirty || saving) return;
   if (formDirty) return status("Save the product form to your draft before publishing.", true);
+  if (!credential) {
+    $("connection").hidden = false;
+    $("token").focus();
+    return status("Connect GitHub to publish this draft. Your edits are still here.");
+  }
   saving = true;
   $("workspace").inert = true;
   status("Publishing your draft to GitHub…");
