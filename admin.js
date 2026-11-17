@@ -182,6 +182,12 @@ $("gate").onsubmit = event => {
   $("summary").textContent = "Published catalog loaded";
   renderProducts(); renderCollections(); renderProduct(); section("products");
   status("Ready to edit.");
+  try {
+    if (!localStorage.getItem("kir-studio-first-unlock") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      localStorage.setItem("kir-studio-first-unlock", "1");
+      $("workspace").animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}], {duration:460,easing:"ease-out"});
+    }
+  } catch { /* Storage preferences never interrupt login. */ }
 };
 $("connection").onsubmit = async event => {
   event.preventDefault();
