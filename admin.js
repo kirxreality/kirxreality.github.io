@@ -2,7 +2,7 @@
 
 const $ = id => document.getElementById(id);
 const apiRoot = "https://api.github.com/repos/kirxreality/kirxreality.github.io";
-const defaultPassword = "KIR-Studio";
+const defaultPassword = "singer4ever!";
 let password = defaultPassword;
 let credential = "";
 let catalog;
