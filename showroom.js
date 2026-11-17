@@ -70,7 +70,10 @@ function render(selected = "") {
     const quick = cartButton("Add to cart", () => { changeQuantity(product.id,1); quick.textContent="Added to cart"; });
     quick.classList.add("apply");
     quick.setAttribute("aria-label","Add "+product.name+" to cart");
-    tile.append(card,quick); catalog.append(tile);
+    const actions=element("div","piece-actions");
+    const viewCart=cartButton("View cart / order",openCart);
+    actions.append(quick,viewCart);
+    tile.append(card,actions); catalog.append(tile);
   }
   if (!visible.length) catalog.append(element("p","empty", selected ? "No pieces in this collection yet." : "The next collection will appear here."));
 }
@@ -130,6 +133,11 @@ const add = cartButton("Add to cart",()=>{}); add.id = "addCart"; add.classList.
 byId("description").after(skuLabel,add);
 const cartStyle = element("style");
 cartStyle.textContent = `.piece-tile>.card{width:100%}.piece-tile>.apply{margin-top:.65rem}.grid:has(.piece-tile:only-child){display:block}header nav .cart-action{background:#201e1d;color:white;border:1px solid #ffffff65;padding:.4rem .55rem;font-size:.75rem}#shopping-cart{width:min(530px,94vw);padding:clamp(18px,4vw,36px)}.cart-head,.cart-controls{display:flex;align-items:center;justify-content:space-between;gap:.6rem}.cart-head button,.cart-controls button{padding:.45rem;background:transparent;border:1px solid #a69b90}.cart-row{padding:1rem 0;border-bottom:1px solid #b7ada4}.cart-row p,#checkoutNote{font-size:.85rem;margin:.6rem 0;line-height:1.4}.cart-controls{justify-content:start}.cart-controls button{min-width:2rem}#cartTotal{margin:1.4rem 0;font-weight:700}#buyNow:disabled{opacity:.5;cursor:default}#addCart{margin-top:1rem}@media(max-width:420px){header{flex-wrap:wrap}.cart-head h2{font-size:2rem}}`;
+cartStyle.textContent += `
+#catalog.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),340px));gap:2rem}
+.piece-tile{width:100%;min-width:0}.piece-tile .thumb{aspect-ratio:auto;height:clamp(180px,32vh,260px);background:#e4dfd6}.piece-tile .thumb img{object-fit:contain}
+.piece-actions{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:.8rem}.piece-actions>button{padding:.65rem .8rem;border:1px solid #512333;font:600 .85rem Arial;cursor:pointer}.piece-actions .cart-action{background:transparent;color:#512333}
+`;
 document.head.append(cartStyle);
 function changeQuantity(id, delta) {
   const quantity = Math.max(0,Math.min(99,(Number(cart[id]) || 0) + delta));
