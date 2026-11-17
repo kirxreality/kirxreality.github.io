@@ -91,6 +91,8 @@ function renderProduct(product) {
   $("deleteProduct").hidden = !product;
   $("productName").value = product?.name ?? "";
   $("description").value = product?.description ?? "";
+  $("skuDisplay").textContent = product ? (product.sku || "KIR-" + product.id.toUpperCase()) : "Assigned automatically when saved";
+  $("variantId").value = product?.variantId || "";
   $("checkoutUrl").value = product?.checkoutUrl ?? "";
   $("price").value = product?.price ?? "";
   $("imageUrl").value = product?.image ?? "";
@@ -177,6 +179,7 @@ $("gate").onsubmit = event => {
   if (entered !== password) return status("That studio password doesn’t match.", true);
   $("gate").hidden = true;
   $("workspace").hidden = false;
+  $("checkoutStore").value = catalog.checkoutStore || "";
   $("shopUrl").value = catalog.shopUrl || "";
   $("publish").disabled = true;
   $("summary").textContent = "Published catalog loaded";
@@ -266,6 +269,10 @@ $("productForm").onsubmit = async event => {
     const image = selectedUpload?.path || imageSource($("imageUrl").value.trim());
     const existing = catalog.products.find(p => p.id === editingId);
     const item = {...existing, id: existing?.id ?? crypto.randomUUID(), name, price: $("price").value.trim(), description: $("description").value.trim(), collection: $("collectionSelect").value, image, checkoutUrl};
+    item.sku = existing?.sku || "KIR-" + item.id.toUpperCase();
+    item.variantId = $("variantId").value.trim();
+    if (item.variantId && !/^[1-9][0-9]*$/.test(item.variantId)) throw Error("Enter the numeric Shopify variant ID.");
+    if (item.variantId && catalog.products.some(p => p.id !== item.id && p.variantId === item.variantId)) throw Error("Another product already uses that checkout variant.");
     if (selectedUpload) uploads.set(image, selectedUpload);
     if (existing) Object.assign(existing, item);
     else catalog.products.push(item);
@@ -292,6 +299,10 @@ $("settings").onsubmit = event => {
   event.preventDefault();
   try {
     const value = $("shopUrl").value.trim();
+    const store = $("checkoutStore").value.trim();
+    const host = store ? httpsUrl(store) : null;
+    if (host && (host.pathname !== "/" || host.search || host.hash || host.hostname.endsWith(".github.io"))) throw Error("Enter the HTTPS homepage of your external Shopify store.");
+    catalog.checkoutStore = host?.origin || "";
     catalog.shopUrl = value ? httpsUrl(value).href : "";
     if ($("newPassword").value) catalog.studioPassword = $("newPassword").value;
     $("newPassword").value = "";
@@ -346,4 +357,21 @@ $("lock").onclick = () => {
 window.addEventListener("beforeunload", event => {
   if (dirty || formDirty || saving) { event.preventDefault(); event.returnValue = ""; }
 });
+function addStudioField(before, label, control) {
+  const wrapper = document.createElement("label");
+  wrapper.textContent = label;
+  wrapper.append(control);
+  $(before).closest("label").before(wrapper);
+}
+const skuDisplay = document.createElement("output");
+skuDisplay.id = "skuDisplay";
+addStudioField("productName", "Product SKU", skuDisplay);
+const variantInput = document.createElement("input");
+variantInput.id = "variantId";
+variantInput.inputMode = "numeric";
+addStudioField("checkoutUrl", "Shopify variant ID for cart checkout", variantInput);
+const storeInput = document.createElement("input");
+storeInput.id = "checkoutStore";
+storeInput.type = "url";
+addStudioField("shopUrl", "Shopify store URL for Buy Now", storeInput);
 start();
