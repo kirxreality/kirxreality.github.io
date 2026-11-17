@@ -179,7 +179,10 @@ $("gate").onsubmit = event => {
   if (entered !== password) return status("That studio password doesn’t match.", true);
   $("gate").hidden = true;
   $("workspace").hidden = false;
-  $("checkoutStore").value = catalog.checkoutStore || "";
+  $("checkoutStore").value = catalog.orderService || "";
+  const ordersLink = $("ordersLink");
+  if (catalog.orderService) { ordersLink.href = catalog.orderService+"?view=orders"; ordersLink.hidden=false; }
+  else { ordersLink.hidden=true; }
   $("shopUrl").value = catalog.shopUrl || "";
   $("publish").disabled = true;
   $("summary").textContent = "Published catalog loaded";
@@ -301,8 +304,8 @@ $("settings").onsubmit = event => {
     const value = $("shopUrl").value.trim();
     const store = $("checkoutStore").value.trim();
     const host = store ? httpsUrl(store) : null;
-    if (host && (host.pathname !== "/" || host.search || host.hash || host.hostname.endsWith(".github.io"))) throw Error("Enter the HTTPS homepage of your external Shopify store.");
-    catalog.checkoutStore = host?.origin || "";
+    if (host && (host.origin !== "https://script.google.com" || !/^\/macros\/s\/[\w-]+\/exec$/.test(host.pathname))) throw Error("Enter your deployed Google Apps Script web app URL ending in /exec.");
+    catalog.orderService = host ? host.origin + host.pathname : "";
     catalog.shopUrl = value ? httpsUrl(value).href : "";
     if ($("newPassword").value) catalog.studioPassword = $("newPassword").value;
     $("newPassword").value = "";
@@ -373,5 +376,12 @@ addStudioField("checkoutUrl", "Shopify variant ID for cart checkout", variantInp
 const storeInput = document.createElement("input");
 storeInput.id = "checkoutStore";
 storeInput.type = "url";
-addStudioField("shopUrl", "Shopify store URL for Buy Now", storeInput);
+addStudioField("shopUrl", "Pay-later order service URL", storeInput);
+const ordersLink=document.createElement("a");
+ordersLink.id="ordersLink";
+ordersLink.textContent="Placed orders";
+ordersLink.hidden=true;
+$("workspace").querySelector("nav").append(ordersLink);
+$("variantId").closest("label").hidden=true;
+$("checkoutUrl").closest("label").hidden=true;
 start();

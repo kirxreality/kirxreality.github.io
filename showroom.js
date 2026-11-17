@@ -48,10 +48,10 @@ function showDetail(product) {
   byId("label").textContent = category(product);
   photo(byId("detail-art"), product);
   byId("pieceSku").textContent = "SKU " + productSku(product);
+  byId("addCart").textContent = "Add to cart";
   byId("addCart").onclick = () => {
     changeQuantity(product.id, 1);
-    detail.close();
-    openCart();
+    byId("addCart").textContent = "Added to cart";
   };
   detail.showModal();
 }
@@ -66,7 +66,11 @@ function render(selected = "") {
     photo(thumb,product);
     card.append(thumb, element("h3","",product.name), element("p","meta",[category(product),priceText(product.price)].filter(Boolean).join(" · ")));
     card.addEventListener("click", () => showDetail(product));
-    catalog.append(card);
+    const tile = element("div","piece-tile");
+    const quick = cartButton("Add to cart", () => { changeQuantity(product.id,1); quick.textContent="Added to cart"; });
+    quick.classList.add("apply");
+    quick.setAttribute("aria-label","Add "+product.name+" to cart");
+    tile.append(card,quick); catalog.append(tile);
   }
   if (!visible.length) catalog.append(element("p","empty", selected ? "No pieces in this collection yet." : "The next collection will appear here."));
 }
@@ -86,7 +90,7 @@ async function init() {
       button.addEventListener("click", () => render(button.value));
       filters.append(button);
     }
-    checkoutStore = data.checkoutStore || "";
+    checkoutStore = data.orderService || "";
     cartReady = true;
     renderCart();
     render();
@@ -118,14 +122,14 @@ document.querySelector("header nav").append(trigger);
 const panel = document.createElement("dialog");
 panel.id = "shopping-cart";
 panel.setAttribute("aria-labelledby","cartTitle");
-panel.innerHTML = '<div class="cart-head"><h2 id="cartTitle">Your cart</h2><button type="button" aria-label="Close cart">Close</button></div><div id="cartLines"></div><p id="cartTotal"></p><button id="buyNow" class="apply" type="button">Buy now &#8599;</button><p id="checkoutNote" role="status"></p>';
+panel.innerHTML = '<div class="cart-head"><h2 id="cartTitle">Your cart</h2><button type="button" aria-label="Close cart">Close</button></div><div id="cartLines"></div><p id="cartTotal"></p><button id="buyNow" class="apply" type="button">Continue to order &#8599;</button><p id="checkoutNote" role="status"></p>';
 document.body.append(panel);
 panel.querySelector(".cart-head button").onclick = () => panel.close();
 const skuLabel = element("p","meta"); skuLabel.id = "pieceSku";
 const add = cartButton("Add to cart",()=>{}); add.id = "addCart"; add.classList.add("apply");
 byId("description").after(skuLabel,add);
 const cartStyle = element("style");
-cartStyle.textContent = `header nav .cart-action{background:#201e1d;color:white;border:1px solid #ffffff65;padding:.4rem .55rem;font-size:.75rem}#shopping-cart{width:min(530px,94vw);padding:clamp(18px,4vw,36px)}.cart-head,.cart-controls{display:flex;align-items:center;justify-content:space-between;gap:.6rem}.cart-head button,.cart-controls button{padding:.45rem;background:transparent;border:1px solid #a69b90}.cart-row{padding:1rem 0;border-bottom:1px solid #b7ada4}.cart-row p,#checkoutNote{font-size:.85rem;margin:.6rem 0;line-height:1.4}.cart-controls{justify-content:start}.cart-controls button{min-width:2rem}#cartTotal{margin:1.4rem 0;font-weight:700}#buyNow:disabled{opacity:.5;cursor:default}#addCart{margin-top:1rem}@media(max-width:420px){header{flex-wrap:wrap}.cart-head h2{font-size:2rem}}`;
+cartStyle.textContent = `.piece-tile>.card{width:100%}.piece-tile>.apply{margin-top:.65rem}.grid:has(.piece-tile:only-child){display:block}header nav .cart-action{background:#201e1d;color:white;border:1px solid #ffffff65;padding:.4rem .55rem;font-size:.75rem}#shopping-cart{width:min(530px,94vw);padding:clamp(18px,4vw,36px)}.cart-head,.cart-controls{display:flex;align-items:center;justify-content:space-between;gap:.6rem}.cart-head button,.cart-controls button{padding:.45rem;background:transparent;border:1px solid #a69b90}.cart-row{padding:1rem 0;border-bottom:1px solid #b7ada4}.cart-row p,#checkoutNote{font-size:.85rem;margin:.6rem 0;line-height:1.4}.cart-controls{justify-content:start}.cart-controls button{min-width:2rem}#cartTotal{margin:1.4rem 0;font-weight:700}#buyNow:disabled{opacity:.5;cursor:default}#addCart{margin-top:1rem}@media(max-width:420px){header{flex-wrap:wrap}.cart-head h2{font-size:2rem}}`;
 document.head.append(cartStyle);
 function changeQuantity(id, delta) {
   const quantity = Math.max(0,Math.min(99,(Number(cart[id]) || 0) + delta));
@@ -159,15 +163,16 @@ function renderCart() {
   byId("cartTotal").textContent=count ? "Subtotal "+priceText(cents/100) : "";
   let target;
   try {
-    const shop=new URL(checkoutStore);
-    if(shop.protocol==="https:" && shop.origin!==location.origin && !shop.username && !shop.password && items.length && items.every(p=>/^[1-9][0-9]*$/.test(p.variantId))) {
-      target=new URL("/cart/"+items.map(p=>p.variantId+":"+cart[p.id]).join(","),shop.origin);
+    const service=new URL(checkoutStore);
+    if(service.origin==="https://script.google.com" && /^\/macros\/s\/[\w-]+\/exec$/.test(service.pathname) && items.length) {
+      target=new URL(service.origin+service.pathname);
+      target.searchParams.set("cart",JSON.stringify(items.map(p=>[p.id,cart[p.id]])));
     }
   } catch {}
   const buy=byId("buyNow");
   buy.disabled=!target;
   buy.onclick=()=>{if(target) location.assign(target.href);};
-  byId("checkoutNote").textContent=count ? (target ? "Shipping and payment are handled in our external store." : "Online ordering is not available for this selection yet.") : "";
+  byId("checkoutNote").textContent=count ? (target ? "Place your order without paying today. KIR will contact you about payment and shipping." : "Online ordering is not available for this selection yet.") : "";
 }
 init();
 
