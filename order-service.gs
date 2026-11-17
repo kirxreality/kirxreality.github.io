@@ -17,7 +17,7 @@ function setup() {
 }
 function sheet_() {return SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty("SHEET")).getSheets()[0];}
 function doGet(e) {
-  const tpl=HtmlService.createTemplate(ORDER_PAGE_);
+  const tpl=HtmlService.createTemplate(ORDER_PAGE_.replace('(<?= admin ? "orders" : "checkout" ?>)', '(document.querySelector("h1").textContent === "Placed orders" ? orders : checkout)'));
   tpl.admin=e.parameter.view==="orders";
   if(tpl.admin) owner_();
   tpl.cart=encodeURIComponent(e.parameter.cart || "[]").replace(/'/g,"%27");
