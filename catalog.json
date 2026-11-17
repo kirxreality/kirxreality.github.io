@@ -25,5 +25,6 @@
       "sku": "KIR-SIMPLE-T-001"
     }
   ],
-  "shopUrl": ""
+  "shopUrl": "",
+  "orderService": "https://script.google.com/macros/s/AKfycby0OUusEfJc4vJdalYTXYkDhP5QGLsqztZ-IuLD47blcj6motVVbkSTDC44GQujctdh8w/exec"
 }
